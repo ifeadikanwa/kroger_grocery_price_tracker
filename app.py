@@ -36,12 +36,18 @@ else:
         item_id = item.item_id
         name = item.name
 
-        col1, col2 = st.columns([4, 1])
+        col1, col2, col3 = st.columns([5, 1.4, 1.4])
 
         with col1:
             st.write(name)
 
         with col2:
-            if st.button("Delete", key=f"delete_{item_id}"):
+            if st.button("Search", key=f"search_{item_id}", use_container_width=True):
+                st.session_state["selected_item_id"] = item_id
+                st.session_state["selected_item_name"] = name
+                st.switch_page("pages/search.py")
+
+        with col3:
+            if st.button("Delete", key=f"delete_{item_id}", use_container_width=True):
                 service.delete_grocery_item(item_id)
                 st.rerun()

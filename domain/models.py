@@ -10,10 +10,11 @@ class GroceryItem:
 
 @dataclass
 class Product:
+    product_id: str
     name: str
     brand: str | None = None
     size: str | None = None
-    product_id: str | None = None
+    
 
 
 @dataclass

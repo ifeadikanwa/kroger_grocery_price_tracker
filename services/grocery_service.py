@@ -1,6 +1,7 @@
 # middle man - providing functions for the ui to fulfill user interactions
 
-from data import database
+from data.database import Database
+from data.kroger_api import KrogerAPI
 from domain import models
 
 
@@ -8,7 +9,10 @@ class GroceryService:
 
     def __init__(self):
         # initialize db instance
-        self.db = database.Database()
+        self.db = Database()
+        
+        #initialize kroger api
+        self.kroger_api = KrogerAPI()
 
     def add_grocery_item(self, name):
         return self.db.insert_grocery_item(name=name)
@@ -29,3 +33,6 @@ class GroceryService:
     
     def delete_grocery_item(self, item_id):
         self.db.delete_grocery_item(item_id)
+        
+    def search_products(self, query: str):
+        return self.kroger_api.search_products(query=query)
