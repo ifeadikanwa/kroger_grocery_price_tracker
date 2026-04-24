@@ -39,6 +39,28 @@ class KrogerAPI:
 
         token_data = response.json()
         return token_data["access_token"]
+    
+    def search_locations(self, zip_code: str):
+        token = self.get_access_token()
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json",
+        }
+
+        params = {
+            "filter.zipCode.near": zip_code,
+            "filter.limit": 5,
+        }
+
+        response = requests.get(
+            "https://api.kroger.com/v1/locations",
+            headers=headers,
+            params=params,
+        )
+        response.raise_for_status()
+
+        return response.json().get("data", [])
 
     def search_products(self, query: str) -> list[Product]:
         # get access token
@@ -52,7 +74,7 @@ class KrogerAPI:
 
         params = {
             "filter.term": query,
-            # "filter.locationId": self.location_id,
+            "filter.locationId": self.location_id,
             "filter.limit": 10,
         }
 
@@ -73,9 +95,17 @@ class KrogerAPI:
 
             items = raw_product.get("items", [])
             size = None
+            regular_price = None
+            promo_price = None
 
             if items:
-                size = items[0].get("size")
+                first_item = items[0]
+                
+                size = first_item.get("size")
+
+                price_info = first_item.get("price", {})
+                regular_price = price_info.get("regular")
+                promo_price = price_info.get("promo")
 
             if product_id and name:
                 products.append(
@@ -84,6 +114,8 @@ class KrogerAPI:
                         name=name,
                         brand=brand,
                         size=size,
+                        regular_price=regular_price,
+                        promo_price=promo_price,
                     )
                 )
                 

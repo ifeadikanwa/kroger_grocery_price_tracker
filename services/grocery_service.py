@@ -13,7 +13,7 @@ class GroceryService:
         
         #initialize kroger api
         self.kroger_api = KrogerAPI()
-
+        
     def add_grocery_item(self, name):
         return self.db.insert_grocery_item(name=name)
 
@@ -36,3 +36,30 @@ class GroceryService:
         
     def search_products(self, query: str):
         return self.kroger_api.search_products(query=query)
+    
+    def track_product(self, item_id: int, product):
+        self.db.insert_product(product)
+        return self.db.insert_tracked_product(
+            item_id=item_id,
+            product_id=product.product_id,
+        )
+        
+    def get_tracked_products_for_item(self, item_id: int):
+        rows = self.db.get_tracked_products_for_item(item_id)
+
+        return [
+            {
+                "tracked_product_id": row[0],
+                "product_id": row[1],
+                "name": row[2],
+                "brand": row[3],
+                "size": row[4],
+                "regular_price": row[5],
+                "promo_price": row[6],
+            }
+            for row in rows
+        ]
+
+
+    def remove_tracked_product(self, tracked_product_id: int):
+        self.db.remove_tracked_product(tracked_product_id)

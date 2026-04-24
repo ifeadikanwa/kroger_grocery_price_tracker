@@ -14,6 +14,8 @@ class Product:
     name: str
     brand: str | None = None
     size: str | None = None
+    regular_price: float | None = None
+    promo_price: float | None = None
     
 
 

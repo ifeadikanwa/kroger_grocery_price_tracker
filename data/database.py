@@ -38,7 +38,9 @@ class Database:
                     product_id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
                     brand TEXT,
-                    size TEXT
+                    size TEXT,
+                    regular_price REAL,
+                    promo_price REAL
                 )
                 """,
                 """CREATE TABLE IF NOT EXISTS tracked_products (
@@ -47,7 +49,8 @@ class Database:
                     item_id INTEGER NOT NULL,
                     is_active INTEGER NOT NULL DEFAULT 1,
                     FOREIGN KEY (product_id) REFERENCES products (product_id),
-                    FOREIGN KEY (item_id) REFERENCES grocery_items (item_id)
+                    FOREIGN KEY (item_id) REFERENCES grocery_items (item_id),
+                    UNIQUE(item_id, product_id)
                 )
                 """,
                 """CREATE TABLE IF NOT EXISTS price_history (
@@ -144,4 +147,90 @@ class Database:
             self.connection.commit()
 
         except sqlite3.Error as e:
+            print(f"Error: {e}")
+            
+    def insert_product(self, product):
+        sql_statement = """
+        INSERT INTO products (
+            product_id, name, brand, size, regular_price, promo_price
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(product_id)
+        DO UPDATE SET
+            name = excluded.name,
+            brand = excluded.brand,
+            size = excluded.size,
+            regular_price = excluded.regular_price,
+            promo_price = excluded.promo_price
+        """
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                sql_statement,
+                (
+                    product.product_id,
+                    product.name,
+                    product.brand,
+                    product.size,
+                    product.regular_price,
+                    product.promo_price,
+                ),
+            )
+            self.connection.commit()
+        except Exception as e:
+            print(f"Error: {e}")
+
+
+    def insert_tracked_product(self, item_id: int, product_id: str):
+        sql_statement = """
+        INSERT INTO tracked_products (item_id, product_id, is_active)
+        VALUES (?, ?, 1)
+        ON CONFLICT(item_id, product_id)
+        DO UPDATE SET is_active = 1
+        """
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(sql_statement, (item_id, product_id))
+            self.connection.commit()
+            return cursor.lastrowid
+        except Exception as e:
+            print(f"Error: {e}")
+            
+    def get_tracked_products_for_item(self, item_id: int):
+        sql_statement = """
+        SELECT 
+            tp.tracked_product_id,
+            p.product_id,
+            p.name,
+            p.brand,
+            p.size,
+            p.regular_price,
+            p.promo_price
+        FROM tracked_products tp
+        JOIN products p ON tp.product_id = p.product_id
+        WHERE tp.item_id = ? AND tp.is_active = 1
+        """
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(sql_statement, (item_id,))
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+            return []
+        
+    def remove_tracked_product(self, tracked_product_id: int):
+        sql_statement = """
+        UPDATE tracked_products
+        SET is_active = 0
+        WHERE tracked_product_id = ?
+        """
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(sql_statement, (tracked_product_id,))
+            self.connection.commit()
+        except Exception as e:
             print(f"Error: {e}")
