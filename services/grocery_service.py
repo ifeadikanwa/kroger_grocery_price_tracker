@@ -26,3 +26,6 @@ class GroceryService:
         ]
 
         return grocery_items
+    
+    def delete_grocery_item(self, item_id):
+        self.db.delete_grocery_item(item_id)

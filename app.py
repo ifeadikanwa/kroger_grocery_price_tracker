@@ -5,9 +5,7 @@ from services import grocery_service
 service = grocery_service.GroceryService()
 
 st.set_page_config(
-    page_title="Grocery Price Tracker",
-    page_icon="🛒",
-    layout="centered"
+    page_title="Grocery Price Tracker", page_icon="🛒", layout="centered"
 )
 
 st.title("Grocery Price Tracker")
@@ -38,4 +36,12 @@ else:
         item_id = item.item_id
         name = item.name
 
-        st.write(f"- {name}")
+        col1, col2 = st.columns([4, 1])
+
+        with col1:
+            st.write(name)
+
+        with col2:
+            if st.button("Delete", key=f"delete_{item_id}"):
+                service.delete_grocery_item(item_id)
+                st.rerun()

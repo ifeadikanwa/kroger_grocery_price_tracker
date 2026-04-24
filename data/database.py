@@ -1,10 +1,8 @@
-""" raw database operations
-"""
+"""raw database operations"""
 
 from dataclasses import asdict
 import sqlite3
 from domain import models
-
 
 
 class Database:
@@ -129,5 +127,21 @@ class Database:
             rows = cursor.fetchall()
 
             return rows
+        except sqlite3.Error as e:
+            print(f"Error: {e}")
+
+    def delete_grocery_item(self, item_id):
+        sql_statement = "DELETE FROM grocery_items WHERE item_id = ?"
+
+        try:
+            # create cursor
+            cursor = self.connection.cursor()
+
+            # execute sql
+            cursor.execute(sql_statement, (item_id,))
+
+            # commit changes
+            self.connection.commit()
+
         except sqlite3.Error as e:
             print(f"Error: {e}")
