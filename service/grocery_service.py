@@ -1,1 +1,0 @@
-# middle man - providing functions for the ui to fulfill user interactions

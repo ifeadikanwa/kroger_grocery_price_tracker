@@ -1,0 +1,28 @@
+# middle man - providing functions for the ui to fulfill user interactions
+
+from data import database
+from domain import models
+
+
+class GroceryService:
+
+    def __init__(self):
+        # initialize db instance
+        self.db = database.Database()
+
+    def add_grocery_item(self, name):
+        return self.db.insert_grocery_item(name=name)
+
+    def get_grocery_items(self):
+        rows = self.db.get_grocery_items()
+
+        # if there no data in db, return empty list
+        if not rows:
+            return []
+
+        #if there is data in db, convert it to groceryItem
+        grocery_items = [
+            models.GroceryItem(item_id=row[0], name=row[1]) for row in rows
+        ]
+
+        return grocery_items
